@@ -1,0 +1,15 @@
+assistant se repite: 1 veces.
+attig se repite: 1 veces.
+cohen se repite: 1 veces.
+director se repite: 2 veces.
+dr se repite: 1 veces.
+honors se repite: 2 veces.
+ira se repite: 1 veces.
+kalus se repite: 1 veces.
+kerry se repite: 1 veces.
+ms se repite: 3 veces.
+office se repite: 2 veces.
+sara se repite: 1 veces.
+sloss se repite: 1 veces.
+staff se repite: 2 veces.
+susan se repite: 1 veces.

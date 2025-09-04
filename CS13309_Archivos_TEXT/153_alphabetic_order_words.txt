@@ -1,0 +1,8 @@
+102400 se repite: 1 veces.
+33 se repite: 2 veces.
+accesswatch-1 se repite: 2 veces.
+aw se repite: 2 veces.
+index se repite: 2 veces.
+of se repite: 2 veces.
+size se repite: 1 veces.
+tar se repite: 1 veces.
