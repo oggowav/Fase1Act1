@@ -75,6 +75,44 @@ reading_results, cleanning_results, words_results = list_html_files(folder_path,
 ending_total_time = time.time()
 total_time = ending_total_time - starting_total_time
 
+def create_consolidated_words_file(output_folder, project_folder):
+    file_durations = []
+    all_words = []
+
+    txt_files = [f for f in os.listdir(output_folder) if f.endswith('.txt') and not f.endswith('_alphabetic_order_words.txt')]
+    for file in txt_files:
+        start_file = time.time()
+        path = os.path.join(output_folder, file)
+        with open(path, "r", encoding="utf-8") as f:
+            text = f.read()
+            words = extract_words(text)
+            all_words.extend([w.lower() for w in words])
+        end_file = time.time()
+        duration = end_file - start_file
+        file_durations.append((file, duration))
+
+    start_sort = time.time()
+    all_words_sorted = sorted(all_words)
+    end_sort = time.time()
+    sort_duration = end_sort - start_sort
+
+    consolidated_file = os.path.join(project_folder, "consolidado_palabras.txt")
+    with open(consolidated_file, "w", encoding="utf-8") as f:
+        for word in all_words_sorted:
+            f.write(f"{word}\n")
+
+    total_consolidated_duration = sum(d for _, d in file_durations) + sort_duration
+    return file_durations, sort_duration, total_consolidated_duration
+
+starting_total_time = time.time()
+reading_results, cleanning_results, words_results = list_html_files(folder_path, output_folder)
+
+consolidated_duration = create_consolidated_words_file(output_folder, project_folder)
+
+ending_total_time = time.time()
+total_time = ending_total_time - starting_total_time
+
+
 with open(os.path.join(project_folder, "a1_03038135.txt"), "w", encoding="utf-8") as archivo:
     for file, duration in reading_results:
         archivo.write(f"{file}            {duration:.4f} \n")
@@ -95,3 +133,12 @@ with open(os.path.join(project_folder, "a3_03038135.txt"), "w", encoding="utf-8"
 
     archivo.write(f"tiempo total en eliminar las etiquetas HTML: {sum(d for _, d in words_results):.4f} segundos\n")
     archivo.write(f"tiempo total de ejecucion {total_time:.4f} segundos\n")
+
+file_durations, sort_duration, consolidated_duration = create_consolidated_words_file(output_folder, project_folder)
+
+with open(os.path.join(project_folder, "a4_03038135.txt"), "w", encoding="utf-8") as archivo:
+    for file, duration in file_durations:
+        archivo.write(f"{file}            {duration:.4f} \n")
+
+    archivo.write(f"tiempo total en crear el nuevo archivo: {consolidated_duration:.4f} segundos\n")
+    archivo.write(f"tiempo total de ejecucion: {total_time:.4f} segundos\n")
