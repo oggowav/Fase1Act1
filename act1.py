@@ -211,12 +211,12 @@ def create_dictionary_with_file_count(folder_path, project_folder):
     end_total = time.time()
     total_time = end_total - start_total
 
-    output_file = os.path.join(project_folder, "a6_03038135.txt")
+    output_file = os.path.join(project_folder, "a6_dictionary.txt")
     with open(output_file, "w", encoding="utf-8") as archivo:
         for token, count in token_counter.items():
             archivo.write(f"{token};{count};{len(token_files[token])}\n")
 
-    log_file = os.path.join(project_folder, "a6_logs.txt")
+    log_file = os.path.join(project_folder, "a6_03038135.txt")
     with open(log_file, "w", encoding="utf-8") as log:
         for filename, duration in file_durations:
             log.write(f"{filename}            {duration:.4f} \n")
