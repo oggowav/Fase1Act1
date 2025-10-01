@@ -142,3 +142,44 @@ with open(os.path.join(project_folder, "a4_03038135.txt"), "w", encoding="utf-8"
 
     archivo.write(f"tiempo total en crear el nuevo archivo: {consolidated_duration:.4f} segundos\n")
     archivo.write(f"tiempo total de ejecucion: {total_time:.4f} segundos\n")
+
+def create_specific_consolidated_file(folder_path, project_folder):
+    files_to_process = ['simple.html', 'medium.html', 'hard.html', '049.html']
+    all_words = []
+    file_durations = []
+
+    start_total = time.time()
+
+    for filename in files_to_process:
+        path = os.path.join(folder_path, filename)
+
+        start_file = time.time()
+        with open(path, "r", encoding="latin-1") as f:
+            text = f.read()
+            cleaned_text = re.sub(r'<.*?>', '', text)
+            words = extract_words(cleaned_text)
+            all_words.extend([w.lower() for w in words])
+        end_file = time.time()
+        file_durations.append((filename, end_file - start_file))
+
+    counter = Counter(all_words)
+
+    start_sort = time.time()
+    all_words_sorted = sorted(counter.items())
+    end_sort = time.time()
+    sort_duration = end_sort - start_sort
+    
+    end_total = time.time()
+    total_time = end_total - start_total
+
+    output_file = os.path.join(project_folder, "a5_03038135.txt")
+    with open(output_file, "w", encoding="utf-8") as archivo:
+        for word, count in all_words_sorted:
+            archivo.write(f"{word} {count}\n")
+
+        archivo.write(f"Tiempo total en crear el nuevo archivo: {sort_duration:.4f} segundos\n")
+        archivo.write(f"Tiempo total de ejecucion: {total_time:.4f} segundos\n")
+
+    return file_durations, sort_duration, total_time
+
+file_durations, sort_duration, total_time_a5 = create_specific_consolidated_file(folder_path, project_folder)
