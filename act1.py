@@ -1,7 +1,7 @@
 import os
 import time
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 
 project_folder = 'C:/Users/OGGO/Desktop/Ultimo Semestre/Fase1Act1'
 folder_path = 'C:/Users/OGGO/Desktop/Ultimo Semestre/Fase1Act1/CS13309_Archivos_HTML/Files'
@@ -183,3 +183,46 @@ def create_specific_consolidated_file(folder_path, project_folder):
     return file_durations, sort_duration, total_time
 
 file_durations, sort_duration, total_time_a5 = create_specific_consolidated_file(folder_path, project_folder)
+
+def create_dictionary_with_file_count(folder_path, project_folder):
+    files_to_process = [f for f in os.listdir(folder_path) if f.endswith(".html")]
+    token_counter = Counter()
+    token_files = defaultdict(set)
+    file_durations = []
+
+    start_total = time.time()
+
+    for filename in files_to_process:
+        path = os.path.join(folder_path, filename)
+
+        start_file = time.time()
+        with open(path, "r", encoding="latin-1") as f:
+            text = f.read()
+            cleaned_text = re.sub(r'<.*?>', '', text)
+            words = extract_words(cleaned_text)
+
+            for w in words:
+                word = w.lower()
+                token_counter[word] += 1
+                token_files[word].add(filename)
+        end_file = time.time()
+        file_durations.append((filename, end_file - start_file))
+
+    end_total = time.time()
+    total_time = end_total - start_total
+
+    output_file = os.path.join(project_folder, "a6_03038135.txt")
+    with open(output_file, "w", encoding="utf-8") as archivo:
+        for token, count in token_counter.items():
+            archivo.write(f"{token};{count};{len(token_files[token])}\n")
+
+    log_file = os.path.join(project_folder, "a6_logs.txt")
+    with open(log_file, "w", encoding="utf-8") as log:
+        for filename, duration in file_durations:
+            log.write(f"{filename}            {duration:.4f} \n")
+        log.write(f"Tiempo total de ejecucion: {total_time:.4f} segundos\n")        
+
+    return file_durations, total_time
+
+
+file_durations_a6, total_time_a6 = create_dictionary_with_file_count(folder_path, project_folder)
