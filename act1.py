@@ -294,22 +294,114 @@ def create_hash_table_dictionary(folder_path, project_folder, matricula="0303813
                     
     log_file = os.path.join(project_folder, f"a8_{matricula}.txt")
     with open(log_file, "w", encoding="utf-8") as log:
-        log.write(f"--- Metadatos de la Hash Table ---\n")
-        log.write(f"Tamaño de la Hash Table (m): {HASH_TABLE_SIZE}\n")
-        log.write(f"Número de Tokens Únicos (n): {len(token_freq)}\n")
-        log.write(f"Número de Colisiones (Chainings): {total_collisions}\n")
-        if HASH_TABLE_SIZE > 0:
-             log.write(f"Factor de Carga (n/m): {len(token_freq) / HASH_TABLE_SIZE:.4f}\n")
-        else:
-             log.write(f"Factor de Carga (n/m): N/A (Tamaño de tabla es 0)\n")
-        log.write(f"\n--- Tiempos por Archivo (Extracción/Recolección) ---\n")
+        for filename, duration in file_durations:
+            log.write(f"{filename}           {duration:.4f} \n")
+
+        log.write(f"Tiempo total de ejecución del programa: {total_time:.4f} segundos\n") 
+    return file_durations, total_time, total_collisions, HASH_TABLE_SIZE
+
+
+def create_filtered_hash_table_dictionary(folder_path, project_folder, matricula="03038135", min_frequency=3):
+    files_to_process = [f for f in os.listdir(folder_path) if f.endswith(".html")]
+    
+    stoplist_path = os.path.join(project_folder, "Actividad9_stoplist.txt")
+    stopwords = set()
+    try:
+        with open(stoplist_path, 'r', encoding='utf-8') as f:
+            content = f.read().lower()
+            stopwords.update(re.split(r'\s+|,', content))
+            stopwords.discard('')
+    except FileNotFoundError:
+        print(f"ADVERTENCIA: Archivo de stoplist no encontrado en {stoplist_path}. Continuando sin filtrar stopwords.")
+    except Exception as e:
+        print(f"ADVERTENCIA: Error al leer stoplist: {e}. Continuando sin filtrar stopwords.")
+
+    hash_table = [[] for _ in range(HASH_TABLE_SIZE)]
+    token_freq = Counter()
+    token_files = defaultdict(set)
+    
+    file_durations = []
+    total_collisions = 0
+    total_tokens_read = 0
+    
+    start_total = time.time()
+
+    for filename in files_to_process:
+        path = os.path.join(folder_path, filename)
+        start_file = time.time()
+        
+        try:
+            with open(path, "r", encoding="latin-1") as f:
+                text = f.read()
+                cleaned_text = re.sub(r'<.*?>', '', text)
+                words = extract_words(cleaned_text)
+
+                for w in words:
+                    word = w.lower()
+                    
+                    total_tokens_read += 1 
+                    
+                    if len(word) <= 1: 
+                        continue
+                    
+                    if word in stopwords: 
+                        continue
+                        
+                    token_freq[word] += 1
+                    token_files[word].add(filename)
+        except Exception as e:
+            print(f"Error en A9 al procesar {filename}: {e}")
+            
+        end_file = time.time()
+        file_durations.append((filename, end_file - start_file))
+    
+    end_data_collection = time.time()
+    data_collection_time = end_data_collection - start_total
+    
+    start_hash_build = time.time()
+    sorted_tokens = sorted(token_freq.keys())
+    
+    total_tokens_filtered_low_freq = 0
+    
+    for token in sorted_tokens:
+        freq = token_freq[token]
+        
+        if freq < min_frequency:
+            total_tokens_filtered_low_freq += 1
+            continue 
+        
+        num_files = len(token_files[token])
+        index = hash_function(token, HASH_TABLE_SIZE)
+        
+        if hash_table[index]:
+            total_collisions += 1
+        
+        hash_table[index].append((token, freq, num_files, index))
+        
+    end_hash_build = time.time()
+    hash_build_time = end_hash_build - start_hash_build
+    
+    end_total = time.time()
+    total_time = end_total - start_total
+    
+    tokens_stored = len(token_freq) - total_tokens_filtered_low_freq
+
+    output_file = os.path.join(project_folder, f"a9_dictionary.txt")
+    
+    with open(output_file, "w", encoding="utf-8") as archivo:
+        for i, slot in enumerate(hash_table):
+            if not slot:
+                archivo.write(f"Posición Hash: {i}, Token: {EMPTY_SLOT_INDICATOR}, Frecuencia: 0, Archivos: 0, Posición Posting: {EMPTY_POSTING_POSITION}\n")
+            else:
+                for token, freq, num_files, _ in slot:
+                    archivo.write(f"Posición Hash: {i}, Token: {token}, Frecuencia: {freq}, Archivos: {num_files}, Posición Posting: {i}\n")
+                    
+    log_file = os.path.join(project_folder, f"a9_{matricula}.txt")
+    with open(log_file, "w", encoding="utf-8") as log:
         for filename, duration in file_durations:
             log.write(f"{filename}           {duration:.4f} \n")
         
-        log.write(f"\n--- Tiempos Totales ---\n")
-        log.write(f"Tiempo Total de Recolección de Datos: {data_collection_time:.4f} segundos\n")
-        log.write(f"Tiempo Total de Construcción de Hash: {hash_build_time:.4f} segundos\n")
-        log.write(f"Tiempo Total de Ejecución del Proceso A8: {total_time:.4f} segundos\n") 
+        log.write(f"Tiempo total de ejecucion del programa: {total_time:.4f} segundos\n") 
 
     return file_durations, total_time, total_collisions, HASH_TABLE_SIZE
 
@@ -328,6 +420,8 @@ if __name__ == "__main__":
     file_durations_a7, total_time_a7 = create_copy_log(folder_path, project_folder)
 
     file_durations_a8, total_time_a8, total_collisions_a8, hash_size_a8 = create_hash_table_dictionary(folder_path, project_folder)
+
+    file_durations_a9, total_time_a9, total_collisions_a9, hash_size_a9 = create_filtered_hash_table_dictionary(folder_path, project_folder)
     
     ending_total_time = time.time()
     total_execution_time = ending_total_time - starting_total_time
@@ -355,5 +449,3 @@ if __name__ == "__main__":
             archivo.write(f"{file}            {duration:.4f} \n")
         archivo.write(f"tiempo total en crear el nuevo archivo (incluye sort): {consolidated_duration_a4:.4f} segundos\n")
         archivo.write(f"tiempo total de ejecucion: {total_execution_time:.4f} segundos\n")
-        
-    print(f"Proceso completado. Archivos de log (a1 a a8) y diccionarios generados en: {project_folder}")
