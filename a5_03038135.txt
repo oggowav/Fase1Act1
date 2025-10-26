@@ -206,5 +206,5 @@ www 1
 x 1
 you 4
 your 2
-Tiempo total en crear el nuevo archivo: 0.0000 segundos
-Tiempo total de ejecucion: 0.0000 segundos
+Tiempo total de procesamiento de palabras y conteo (sin incluir archivos individuales): 0.0000 segundos
+Tiempo total de ejecucion: 0.0019 segundos
